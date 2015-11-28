@@ -1,9 +1,9 @@
-#include<linkage.h>
+#include<linux/linkage.h>
 #include<linux/kernel.h>
 #include<linux/sched.h>
 #include<linux/mm.h>
 
-asmlinkage void linux_survey_TT(int pid, char* result)
+asmlinkage void sys_linux_survey_TT(int pid, char* result)
 {
 	struct task_struct *target_task;
 	struct mm_struct *target_mm;
@@ -20,12 +20,10 @@ asmlinkage void linux_survey_TT(int pid, char* result)
 	"Code Segment start = %lx, end = %lx\n"
 	"Data Segement start = %lx, end = %lx\n"
 	"Heap Segement start = %lx, end = %lx\n"
-	"Memory Mapping Segment start = %lx\n"
 	"Stack Segment start = %lx\n",
 	target_mm->start_code, target_mm->end_code,
 	target_mm->start_data, target_mm->end_data,
 	target_mm->start_brk, target_mm->brk,
-	target_mm->start_mmap,
 	target_mm->start_stack);
 
 	for(target_vma = target_mm->mmap; target_vma; target_vma = target_vma->vm_next){
