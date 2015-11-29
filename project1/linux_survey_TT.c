@@ -2,13 +2,17 @@
 #include<linux/kernel.h>
 #include<linux/sched.h>
 #include<linux/mm.h>
+#include<linux/uaccess.h>
 #include<linux/string.h>
+
+#define BUFF_SIZE 10000
 
 asmlinkage void sys_linux_survey_TT(int pid, char* result)
 {
 	struct task_struct *target_task;
 	struct mm_struct *target_mm;
 	struct vm_area_struct *target_vma;
+	char buff[BUFF_SIZE];
 
 	for_each_process(target_task){
 		if(target_task->pid == pid)
@@ -29,18 +33,19 @@ asmlinkage void sys_linux_survey_TT(int pid, char* result)
 	target_mm->start_brk, target_mm->brk,
 	target_mm->start_stack);
 	//-----
-	snprintf(result, sizeof(result), "%lx-%lx:", target_mm->start_code, target_mm->end_code);
-	snprintf(result + strnlen(result, sizeof(result)), "%lx-%lx:", target_mm->start_data, target_mm->end_code);
-	snprintf(result + strnlen(result, sizeof(result)), "%lx-%lx:", target_mm->start_brk, target_mm->brk);
-	snprintf(result + strnlen(result, sizeof(result)), "%lx-%lx:", target_mm->start_stack, target_mm->start_stack);
+	sprintf(buff, "%lx-%lx:", target_mm->start_code, target_mm->end_code);
+	sprintf(buff + strlen(buff), "%lx-%lx:", target_mm->start_data, target_mm->end_code);
+	sprintf(buff + strlen(buff), "%lx-%lx:", target_mm->start_brk, target_mm->brk);
+	sprintf(buff + strlen(buff), "%lx-%lx:", target_mm->start_stack, target_mm->start_stack);
 
 
 	for(target_vma = target_mm->mmap; target_vma; target_vma = target_vma->vm_next){
 		//-----
 		printk("VM Area start = %lx, end = %lx\n", target_vma->vm_start, target_vma->vm_end);
 		//-----
-		snprintf(result + strnlen(result, sizeof(result)), "%lx-%lx|", target_vma->vm_start, target_vma->vm_end);
+		sprintf(buff + strlen(buff), "%lx-%lx|", target_vma->vm_start, target_vma->vm_end);
 	}
-	snprintf(result + strnlen(result, sizeof(result)), ":");
+	sprintf(buff + strlen(buff), ":");
+	copy_to_user(result, buff, BUFF_SIZE);
 
 }
