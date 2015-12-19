@@ -19,7 +19,8 @@ asmlinkage void sys_linux_survey_TT(int pid, char __user * result)
 {
     struct task_struct *target_task;
     struct mm_struct *target_mm;
-    struct vm_area_struct *target_vma,*vm_addr;
+    struct vm_area_struct *target_vma;
+	unsigned long vm_addr;
     //unsigned long vm_addr;
    
     //char buff[BUFF_SIZE];
@@ -69,9 +70,10 @@ asmlinkage void sys_linux_survey_TT(int pid, char __user * result)
 
         sprintf(buff + strlen(buff), "%08lx-%08lx|", target_vma->vm_start, target_vma->vm_end);
 
-	for(vm_addr = target_vma->vm_start ;vm_addr < target_vma->vm_end;vm_addr += 0x1000)
-	{
+	for(vm_addr = target_vma->vm_start ;vm_addr < target_vma->vm_end;vm_addr += 0x1000){
+	   printk("Getting in sprintf...\nstart_addr: %08lx\ntarget_addr: %08lx\n", target_vma->vm_start, vm_addr);
 	   sprintf(buff + strlen(buff), "%08lx-%08lx|", vm_addr, virtophy(target_task->mm,vm_addr));
+	   printk("Finish sprintf.\n");
 	}
 	sprintf(buff + strlen(buff), ":");
     }  //------******-------
@@ -91,7 +93,7 @@ unsigned long virtophy(struct mm_struct *target_mm ,unsigned long target)
 {
 	unsigned long pa;
 	struct page *page;
-
+printk("Start virtophy.....\n");
 	page = follow_page(target_mm->mmap, target ,0);
 	if(page == NULL)
 	{ pa = 0x00000000;
@@ -182,5 +184,7 @@ unsigned long virtophy(struct mm_struct *target_mm ,unsigned long target)
 	pte_unmap(pte_tmp);
 	end: 
 	//printk("End of the kernel program.\n");
+	printk("Finish virtophy!!\n");
 	return pa;
+	
 }
